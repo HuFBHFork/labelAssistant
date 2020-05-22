@@ -74,12 +74,15 @@ class MainWindow(QMainWindow, WindowMixin):
         self.setWindowTitle(__appname__)
 
         # Load setting in the main thread
-        self.settings = Settings()
+        self.settings = Settings("labelImgPlus")
         self.settings.load()
         settings = self.settings
 
-        # Load string bundle for i18n
+        # Load string bundle for i18n OR from settings files     
         self.stringBundle = StringBundle.getBundle()
+        self.languageSelect = settings.get(LANGUAGE,None)
+        if self.languageSelect is not None:
+            self.stringBundle.resetBundle(self.languageSelect)
         getStr = lambda strId: self.stringBundle.getString(strId)
 
         # Save as Pascal voc xml
@@ -100,7 +103,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self._beginner = True
         self.screencastViewer = self.getAvailableScreencastViewer()
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
-        self.website = "https:/"
+        self.website = "https://github.com/HuFBHFork/labelAssistant"
 
         # Load predefined classes to the list
         self.loadPredefinedClasses(defaultPrefdefClassFile)
@@ -355,7 +358,9 @@ class MainWindow(QMainWindow, WindowMixin):
             windows = self.menu('&Windows'),
             configs = self.menu('&Settings'),
             help=self.menu('&Help'),
+            ex_tools = self.menu('&Ex-tools'),
             recentFiles=QMenu('Open &Recent'),
+            ex_tools_languages=QMenu("&Languages"),
             labelList=labelMenu)
 
         # Auto saving : Enable auto saving if pressing next
@@ -398,6 +403,13 @@ class MainWindow(QMainWindow, WindowMixin):
         addActions(self.menus.help, (
             help, 
             aboutThis))
+
+        addActions(self.menus.ex_tools,(
+            self.menus.ex_tools_languages,
+            None
+        ))
+
+        self.initSelfLanguage()
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -547,6 +559,13 @@ class MainWindow(QMainWindow, WindowMixin):
     def hidetoolsbar(self,value=True):
         self.tools.setVisible(value)
 
+    def languageChange(self,i):
+        sqr_languages = [":/strings",":/strings-zh-CN",":/strings-zh-TW"]
+        self.settings[LANGUAGE] = sqr_languages[i]
+        self.close()
+        proc = QProcess()
+        proc.startDetached(os.path.abspath(__file__))
+
     def populateModeActions(self):
         if self.beginner():
             tool, menu = self.actions.beginner, self.actions.beginnerContext
@@ -666,6 +685,15 @@ class MainWindow(QMainWindow, WindowMixin):
         assert self.advanced()
         self.toggleDrawMode(True)
         self.labelSelectionChanged()
+
+    def initSelfLanguage(self):
+        menu = self.menus.ex_tools_languages
+        menu.clear()
+        langs = self.stringBundle.getString("languages").split(",")
+        for i,lang in enumerate(langs):
+            action = QAction(lang,self)
+            action.triggered.connect(partial(self.languageChange,i))
+            menu.addAction(action)
 
     def updateFileMenu(self):
         currFilePath = self.filePath

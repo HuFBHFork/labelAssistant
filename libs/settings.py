@@ -4,11 +4,14 @@ import sys
 
 
 class Settings(object):
-    def __init__(self):
+    def __init__(self,appName):
         # Be default, the home will be in the same folder as labelImg
         home = os.path.expanduser("~")
         self.data = {}
-        self.path = os.path.join(home, '.labelImgSettings.pkl')
+        app_workspace = os.path.join(home,".{}".format(appName))
+        if not os.path.exists(app_workspace):
+            os.makedirs(app_workspace)
+        self.path = os.path.join(app_workspace,'Settings.pkl')
 
     def __setitem__(self, key, value):
         self.data[key] = value

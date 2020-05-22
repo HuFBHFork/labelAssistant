@@ -8,7 +8,16 @@
 ### 许可证
 开源免费: [MIT license](https://github.com/tzutalin/labelImg/blob/master/LICENSE)
 ### 扩展日记与规划
- - 基本调整（0.1.0）
+
+| 修改计划             | 说明                         | 状态            |
+| -------------------- | ---------------------------- | --------------- |
+| 1、扩展-基本调整     | 项目名称、菜单栏、界面控制等 | 已完成（0.1.0） |
+| 2、扩展-修改语言切换 | 可自行选择语言               | 已完成（0.1.1） |
+| 3、扩展-导出         | 导出图像分类数据集           |                 |
+| 4、扩展-传输         | 支持网络传输数据             |                 |
+
+
+
 ------
 ## English
 ### Notice
@@ -19,3 +28,4 @@
 Free software : [MIT license](https://github.com/tzutalin/labelImg/blob/master/LICENSE)
 ### Main Log
  - basic adjustment of project's infomation and Menus. (in v0.1.0)
+ - support languages setting.(in v0.1.1)

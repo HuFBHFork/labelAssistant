@@ -38,6 +38,10 @@ class StringBundle:
 
         return StringBundle(cls.__create_key, localeStr)
 
+    def resetBundle(self,filePath):
+        self.idToMessage = {}
+        self.__loadBundle(filePath)
+
     def getString(self, stringId):
         assert(stringId in self.idToMessage), "Missing string id : " + stringId
         return self.idToMessage[stringId]
