@@ -123,37 +123,40 @@ class PascalVocWriter:
         out_file.write(prettifyResult.decode('utf8'))
         out_file.close()
 
-
 class PascalVocReader:
 
     def __init__(self, filepath):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
-        self.shapes = []
-        self.filepath = filepath
+        self._shapes = []
+        self._filepath = filepath
+        self._imgPath = None
+        self._filename = None
         self.verified = False
         try:
-            self.parseXML()
+            self._parseXML()
         except:
             pass
 
     def getShapes(self):
-        return self.shapes
+        return self._shapes
 
-    def addShape(self, label, bndbox, difficult):
+    def _addShape(self, label, bndbox, difficult):
         xmin = int(float(bndbox.find('xmin').text))
         ymin = int(float(bndbox.find('ymin').text))
         xmax = int(float(bndbox.find('xmax').text))
         ymax = int(float(bndbox.find('ymax').text))
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, difficult))
+        self._shapes.append((label, points, None, None, difficult))
 
-    def parseXML(self):
-        assert self.filepath.endswith(XML_EXT), "Unsupport file format"
+    def _parseXML(self):
+        assert self._filepath.endswith(XML_EXT), "Unsupport file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
-        xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
-        filename = xmltree.find('filename').text
+        xmltree = ElementTree.parse(self._filepath, parser=parser).getroot()
+        self._filename = xmltree.find('filename').text
+
         try:
+            self._imgPath = xmltree.find('path').text
             verified = xmltree.attrib['verified']
             if verified == 'yes':
                 self.verified = True
@@ -167,5 +170,6 @@ class PascalVocReader:
             difficult = False
             if object_iter.find('difficult') is not None:
                 difficult = bool(int(object_iter.find('difficult').text))
-            self.addShape(label, bndbox, difficult)
+            self._addShape(label, bndbox, difficult)
+
         return True

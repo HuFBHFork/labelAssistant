@@ -44,6 +44,7 @@ from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from libs.export_classification import Dialog_ExportCls
 
 __appname__ = 'labelImgPlus(My LabelAssistant)'
 
@@ -258,6 +259,9 @@ class MainWindow(QMainWindow, WindowMixin):
         # Toolbar view : Enable to show toobar
         self.viewToolbar = action(getStr('hideToolbar'),self.hidetoolsbar,checkable=True)
 
+        # export classification : 
+        self.export_cls = action(getStr('exportClassification'),self.export_classification)
+
         hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
                          'Ctrl+H', 'hide', getStr('hideAllBoxDetail'),
                          enabled=False)
@@ -406,7 +410,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         addActions(self.menus.ex_tools,(
             self.menus.ex_tools_languages,
-            None
+            self.export_cls
         ))
 
         self.initSelfLanguage()
@@ -558,6 +562,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def hidetoolsbar(self,value=True):
         self.tools.setVisible(value)
+
+    def export_classification(self):
+        tmp = Dialog_ExportCls(self)
+        tmp.showSaveDir(self.defaultSaveDir)
+        tmp.show() 
+        
 
     def languageChange(self,i):
         sqr_languages = [":/strings",":/strings-zh-CN",":/strings-zh-TW"]

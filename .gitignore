@@ -18,3 +18,5 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+
+tests/
