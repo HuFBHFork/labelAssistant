@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import os
 import glob
+import _thread
 
 from .pascal_voc_io import PascalVocReader
 from .ui_ExportCls import Ui_ExportCls
@@ -126,30 +127,44 @@ class Dialog_ExportCls(QDialog):
         super(Dialog_ExportCls,self).__init__(parent)
         self.ui = Ui_ExportCls()
         self.ui.setupUi(self)
-        self.xmlDir = None
+        self.xmlDir = None   # xml信息目录，也是导出分类目录
 
         self.showSaveDir(xmlDir)
         self.ui.buttonBox.accepted.connect(self.clicked_ok)
+        self.ui.buttonBox.rejected.connect(self.cliked_reject)
+        self.ui.pushButton.clicked.connect(self.clicked_open)
 
         self._fix_counts = 0
+        self._exit = False
 
     def showSaveDir(self,path_dir):
         self.ui.lineEdit.setText(path_dir)
         self.xmlDir = path_dir
+
+    def cliked_reject(self):
+        self._exit = True
 
     def clicked_ok(self):
        
         if self.xmlDir is None:
             self.close()
             return 0
-        
-        # 开始执行：导出
-        exporter = ExportCls(self.xmlDir)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
+        try:
+            _thread.start_new_thread(self.export_worker,())
+        except:
+            self.close()
+        
+    def export_worker(self):
+        # 开始执行：导出（工作线程）
+        exporter = ExportCls(self.xmlDir)
+        
         # 互动式导出
         self._fix_imgPath(exporter)
-
+        
         exporter.saveClasslist()
+
         # python中创建的对象，会因为close()释放内存吗？
         self.close()
 
@@ -159,6 +174,9 @@ class Dialog_ExportCls(QDialog):
 
         files = glob.glob('{}/*.xml'.format(self.xmlDir))
         for i,xmlPath in enumerate(files):
+            if self._exit:
+                _thread.exit()
+
             if exporter.isOverError(len(files)):
                 self._fix_counts += 1
                 # 更新图像目录
@@ -175,7 +193,13 @@ class Dialog_ExportCls(QDialog):
             i += 1
             self.ui.progressBar.setValue(round(i*100/len(files)))
 
-        
+    def clicked_open(self):
+        self.xmlDir = ustr(QFileDialog.getExistingDirectory(self,
+                                                       'xml directory:', self.xmlDir,  QFileDialog.ShowDirsOnly
+                                                       | QFileDialog.DontResolveSymlinks))   
+        self.showSaveDir(self.xmlDir)
+
+
 
 
 

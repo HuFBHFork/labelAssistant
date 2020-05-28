@@ -364,7 +364,7 @@ class MainWindow(QMainWindow, WindowMixin):
             help=self.menu('&Help'),
             ex_tools = self.menu('&Ex-tools'),
             recentFiles=QMenu('Open &Recent'),
-            ex_tools_languages=QMenu("&Languages"),
+            ex_tools_languages=QMenu(getStr("languagechange")),
             labelList=labelMenu)
 
         # Auto saving : Enable auto saving if pressing next
