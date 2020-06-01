@@ -31,3 +31,4 @@ Free software : [MIT license](https://github.com/tzutalin/labelImg/blob/master/L
  - basic adjustment of project's infomation and Menus. (in v0.1.0)
  - support languages setting.(in v0.2.0)
  - support export classification dataset from object detection infomation.(in v0.3.0)
+ - support segmentation labeling as labelme-4.4.0.(in v0.4.0)
