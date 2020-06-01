@@ -12,7 +12,9 @@ from libs.yolo_io import YOLOWriter
 from libs.pascal_voc_io import XML_EXT
 import os.path
 import sys
+import json
 
+from libs.seg_io import JSON_EXT
 
 class LabelFileError(Exception):
     pass
@@ -22,6 +24,7 @@ class LabelFile(object):
     # It might be changed as window creates. By default, using XML ext
     # suffix = '.lif'
     suffix = XML_EXT
+    suffix_seg = JSON_EXT
 
     def __init__(self, filename=None):
         self.shapes = ()
@@ -83,42 +86,45 @@ class LabelFile(object):
         writer.save(targetFile=filename, classList=classList)
         return
 
+    def saveJsonFormat(self,filename,shapes,imagePath,imageHeight,imageWidth,
+                        imageData=None,otherData=None,flags=None):
+        if imageData is not None:
+            imageData = None
+        if otherData is None:
+            otherData = {}
+        if flags is None:
+            flags = {}
+        data = dict(
+            version="4.4.0",
+            flags=flags,
+            shapes=shapes,
+            imagePath=imagePath,
+            imageData=imageData,
+            imageHeight=imageHeight,
+            imageWidth=imageWidth,
+        )
+        for key, value in otherData.items():
+            assert key not in data
+            data[key] = value
+        try:
+            with open(filename, 'w') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            self.filename = filename
+        except Exception as e:
+            raise LabelFileError(e)
+
     def toggleVerify(self):
         self.verified = not self.verified
-
-    ''' ttf is disable
-    def load(self, filename):
-        import json
-        with open(filename, 'rb') as f:
-                data = json.load(f)
-                imagePath = data['imagePath']
-                imageData = b64decode(data['imageData'])
-                lineColor = data['lineColor']
-                fillColor = data['fillColor']
-                shapes = ((s['label'], s['points'], s['line_color'], s['fill_color'])\
-                        for s in data['shapes'])
-                # Only replace data after everything is loaded.
-                self.shapes = shapes
-                self.imagePath = imagePath
-                self.imageData = imageData
-                self.lineColor = lineColor
-                self.fillColor = fillColor
-
-    def save(self, filename, shapes, imagePath, imageData, lineColor=None, fillColor=None):
-        import json
-        with open(filename, 'wb') as f:
-                json.dump(dict(
-                    shapes=shapes,
-                    lineColor=lineColor, fillColor=fillColor,
-                    imagePath=imagePath,
-                    imageData=b64encode(imageData)),
-                    f, ensure_ascii=True, indent=2)
-    '''
 
     @staticmethod
     def isLabelFile(filename):
         fileSuffix = os.path.splitext(filename)[1].lower()
         return fileSuffix == LabelFile.suffix
+
+    @staticmethod
+    def isLabelFile_Seg(filename):
+        fileSuffix = os.path.splitext(filename)[1].lower()
+        return fileSuffix == LabelFile.suffix_seg
 
     @staticmethod
     def convertPoints2BndBox(points):

@@ -20,11 +20,10 @@ DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
 MIN_Y_LABEL = 10
 
-
 class Shape(object):
-    P_SQUARE, P_ROUND = range(2)
+    P_SQUARE, P_ROUND = 0,1
 
-    MOVE_VERTEX, NEAR_VERTEX = range(2)
+    MOVE_VERTEX, NEAR_VERTEX = 0,1
 
     # The following class variables influence the drawing
     # of _all_ shape objects.
@@ -69,8 +68,10 @@ class Shape(object):
             return True
         return False
 
-    def addPoint(self, point):
-        if not self.reachMaxPoints():
+    def addPoint(self, point,polygon=False):
+        if self.points and point == self.points[0]:
+            self.close()
+        elif not self.reachMaxPoints() or polygon:
             self.points.append(point)
 
     def popPoint(self):
@@ -91,7 +92,7 @@ class Shape(object):
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
             painter.setPen(pen)
-
+            
             line_path = QPainterPath()
             vrtx_path = QPainterPath()
 
@@ -140,10 +141,12 @@ class Shape(object):
         if i == self._highlightIndex:
             size, shape = self._highlightSettings[self._highlightMode]
             d *= size
+
         if self._highlightIndex is not None:
             self.vertex_fill_color = self.hvertex_fill_color
         else:
             self.vertex_fill_color = Shape.vertex_fill_color
+
         if shape == self.P_SQUARE:
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
@@ -195,6 +198,9 @@ class Shape(object):
         shape.difficult = self.difficult
         return shape
 
+    def pointf2point(self):
+        return [i.toPoint() for i in self.points]
+
     def __len__(self):
         return len(self.points)
 
@@ -203,3 +209,4 @@ class Shape(object):
 
     def __setitem__(self, key, value):
         self.points[key] = value
+
